@@ -1,4 +1,4 @@
-# GS 2 das matérias Advanced Programming & Mobile DEV e Técnicas Avançadas de Programação - Smart Water & Energy Station
+# GS 2 das matérias Advanced Programming & Mobile DEV e Técnicas Avançadas de Programação - VAPOREON
 
 ## Integrantes:
 * Giovanna Carmona Roman Lopes – RM: 563469;
