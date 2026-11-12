@@ -3,8 +3,12 @@ import { ActivityIndicator, RefreshControl, ScrollView, StyleSheet, TouchableOpa
 import { api, ApiOfflineError } from '../api';
 import { Text } from '../components/AppText';
 import { Gotinha } from '../components/Gotinha';
+import { HistoricoGrafico } from '../components/HistoricoGrafico';
 import { MetricCard } from '../components/MetricCard';
 import { OfflineBanner } from '../components/OfflineBanner';
+import { PainelAlertas } from '../components/PainelAlertas';
+import { PainelAtuadores } from '../components/PainelAtuadores';
+import { StatusSelo, EstadoEstacao } from '../components/StatusSelo';
 import { TankLevel } from '../components/TankLevel';
 import { LIMITES } from '../config';
 import { useApiData } from '../hooks/useApiData';
@@ -45,6 +49,7 @@ export function PainelScreen() {
   const vazaoStatus = leitura && leitura.vazao > LIMITES.vazaoMaxima ? 'danger' : 'ok';
   const consumoStatus = leitura && leitura.consumoEletrico > LIMITES.consumoMaximo ? 'danger' : 'ok';
   const precisaAtencao = nivelStatus !== 'ok' || vazaoStatus !== 'ok' || consumoStatus !== 'ok';
+  const estado: EstadoEstacao = offline ? 'offline' : precisaAtencao ? 'atencao' : 'ok';
 
   return (
     <ScrollView
@@ -53,6 +58,8 @@ export function PainelScreen() {
       refreshControl={<RefreshControl refreshing={false} onRefresh={refresh} />}
     >
       <OfflineBanner visible={offline} />
+
+      {leitura || offline ? <StatusSelo estado={estado} /> : null}
 
       {loading && !leitura ? <ActivityIndicator size="large" color={colors.primary} style={{ marginTop: 40 }} /> : null}
 
@@ -97,6 +104,16 @@ export function PainelScreen() {
       <TouchableOpacity style={[styles.button, simulando && { opacity: 0.6 }]} onPress={simular} disabled={simulando}>
         <Text style={styles.buttonText}>{simulando ? 'Simulando...' : 'Simular leitura'}</Text>
       </TouchableOpacity>
+
+      <View style={[largo ? styles.grid : undefined, { marginTop: 18 }]}>
+        <View style={largo ? styles.coluna : undefined}>
+          <PainelAtuadores />
+          <PainelAlertas />
+        </View>
+        <View style={largo ? styles.coluna : undefined}>
+          <HistoricoGrafico />
+        </View>
+      </View>
 
       <View style={styles.mascote}>
         <Gotinha tamanho={54} atencao={precisaAtencao || offline} />
