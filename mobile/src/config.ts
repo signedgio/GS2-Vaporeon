@@ -1,11 +1,7 @@
-// ============================================================
-// CONFIGURACAO DA API
-// Troque o IP abaixo conforme onde o app esta rodando:
-//  - Celular fisico (Expo Go): IP do PC na rede Wi-Fi, ex: http://192.168.0.15:8080
-//  - Emulador Android:         http://10.0.2.2:8080
-//  - Simulador iOS / Web:      http://localhost:8080
-// ============================================================
-export const API_URL = 'http://192.168.0.10:8080';
+// Endereco da API (backend Spring Boot).
+// Navegador no mesmo computador do backend: http://localhost:8080
+// Celular (Expo Go): troque pelo IP do PC na rede Wi-Fi, ex: http://192.168.0.15:8080
+export const API_URL = 'http://localhost:8080';
 
 /** De quanto em quanto tempo o painel consulta a API (ms). */
 export const POLL_INTERVAL_MS = 5000;
