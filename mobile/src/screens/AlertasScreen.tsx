@@ -1,20 +1,33 @@
-import { useState } from 'react';
-import { ActivityIndicator, FlatList, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
+import { useMemo, useState } from 'react';
+import { ActivityIndicator, RefreshControl, ScrollView, StyleSheet, TouchableOpacity, View } from 'react-native';
 import { api, ApiOfflineError } from '../api';
+import { Text } from '../components/AppText';
 import { OfflineBanner } from '../components/OfflineBanner';
 import { useApiData } from '../hooks/useApiData';
-import { colors, radius } from '../theme';
+import { useLayout } from '../hooks/useLayout';
+import { useTheme } from '../ThemeContext';
+import { Palette, radius } from '../theme';
 import { Severidade } from '../types';
 import { avisar } from '../utils/avisar';
 
-const COR_SEVERIDADE: Record<Severidade, string> = {
-  BAIXA: colors.ok,
-  MEDIA: colors.warn,
-  ALTA: colors.danger,
-  CRITICA: colors.critical,
+const ROTULO: Record<Severidade, string> = {
+  BAIXA: 'BAIXA',
+  MEDIA: 'MÉDIA',
+  ALTA: 'ALTA',
+  CRITICA: 'CRÍTICA',
 };
 
 export function AlertasScreen() {
+  const { colors, shadow } = useTheme();
+  const { largo } = useLayout();
+  const styles = useMemo(() => makeStyles(colors, shadow), [colors, shadow]);
+  const corSeveridade: Record<Severidade, string> = {
+    BAIXA: colors.ok,
+    MEDIA: colors.warn,
+    ALTA: colors.danger,
+    CRITICA: colors.critical,
+  };
+
   const [apenasAbertas, setApenasAbertas] = useState(true);
   const { data: falhas, loading, offline, error, refresh } = useApiData(
     () => api.falhas(apenasAbertas),
@@ -28,13 +41,17 @@ export function AlertasScreen() {
     } catch (e) {
       avisar(
         e instanceof ApiOfflineError ? 'API fora do ar' : 'Erro',
-        e instanceof ApiOfflineError ? 'Nao foi possivel resolver o alerta agora.' : (e as Error).message,
+        e instanceof ApiOfflineError ? 'Não foi possível resolver o alerta agora.' : (e as Error).message,
       );
     }
   }
 
   return (
-    <View style={styles.screen}>
+    <ScrollView
+      style={styles.screen}
+      contentContainerStyle={[styles.content, largo && styles.contentLargo]}
+      refreshControl={<RefreshControl refreshing={false} onRefresh={refresh} />}
+    >
       <OfflineBanner visible={offline} />
 
       <View style={styles.filters}>
@@ -54,18 +71,22 @@ export function AlertasScreen() {
       {loading && !falhas ? <ActivityIndicator size="large" color={colors.primary} style={{ marginTop: 40 }} /> : null}
       {error ? <Text style={styles.error}>{error}</Text> : null}
 
-      <FlatList
-        data={falhas ?? []}
-        keyExtractor={(f) => String(f.id)}
-        onRefresh={refresh}
-        refreshing={false}
-        ListEmptyComponent={
-          !loading && !offline ? <Text style={styles.empty}>Nenhum alerta {apenasAbertas ? 'aberto' : 'registrado'} 🎉</Text> : undefined
-        }
-        renderItem={({ item }) => (
-          <View style={[styles.card, { borderLeftColor: COR_SEVERIDADE[item.severidade] }, item.resolvida && { opacity: 0.55 }]}>
+      {falhas && falhas.length === 0 && !offline ? (
+        <Text style={styles.empty}>Nenhum alerta {apenasAbertas ? 'aberto' : 'registrado'} 🎉</Text>
+      ) : null}
+
+      <View style={styles.lista}>
+        {(falhas ?? []).map((item) => (
+          <View
+            key={item.id}
+            style={[
+              styles.card,
+              { borderLeftColor: corSeveridade[item.severidade], width: largo ? '49%' : '100%' },
+              item.resolvida && { opacity: 0.55 },
+            ]}
+          >
             <View style={styles.topRow}>
-              <Text style={[styles.sev, { color: COR_SEVERIDADE[item.severidade] }]}>{item.severidade}</Text>
+              <Text style={[styles.sev, { color: corSeveridade[item.severidade] }]}>{ROTULO[item.severidade]}</Text>
               <Text style={styles.origem}>{item.origem}</Text>
             </View>
             <Text style={styles.descricao}>{item.descricao}</Text>
@@ -80,28 +101,32 @@ export function AlertasScreen() {
               )}
             </View>
           </View>
-        )}
-      />
-    </View>
+        ))}
+      </View>
+    </ScrollView>
   );
 }
 
-const styles = StyleSheet.create({
-  screen: { flex: 1, backgroundColor: colors.background, padding: 16 },
-  filters: { flexDirection: 'row', gap: 8, marginBottom: 12 },
-  chip: { paddingVertical: 6, paddingHorizontal: 14, borderRadius: 20, backgroundColor: colors.card, borderWidth: 1, borderColor: colors.border },
-  chipActive: { backgroundColor: colors.primary, borderColor: colors.primary },
-  chipText: { color: colors.muted, fontWeight: '600' },
-  chipTextActive: { color: '#fff' },
-  card: { backgroundColor: colors.card, borderRadius: radius, borderLeftWidth: 6, padding: 14, marginBottom: 12 },
-  topRow: { flexDirection: 'row', justifyContent: 'space-between' },
-  sev: { fontWeight: '800', fontSize: 12 },
-  origem: { color: colors.muted, fontSize: 12 },
-  descricao: { fontSize: 15, color: colors.text, marginVertical: 8 },
-  bottomRow: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center' },
-  data: { color: colors.muted, fontSize: 12 },
-  resolver: { color: colors.primary, fontWeight: '700', fontSize: 13 },
-  resolvida: { color: colors.ok, fontWeight: '700', fontSize: 13 },
-  error: { color: colors.danger, textAlign: 'center', marginVertical: 12 },
-  empty: { textAlign: 'center', color: colors.muted, marginTop: 40 },
-});
+const makeStyles = (c: Palette, shadow: { boxShadow: string }) =>
+  StyleSheet.create({
+    screen: { flex: 1, backgroundColor: c.background },
+    content: { padding: 16, paddingBottom: 32 },
+    contentLargo: { padding: 28, width: '100%', maxWidth: 1400, alignSelf: 'center' },
+    filters: { flexDirection: 'row', gap: 8, marginBottom: 14 },
+    chip: { paddingVertical: 6, paddingHorizontal: 16, borderRadius: 20, backgroundColor: c.card, borderWidth: 1, borderColor: c.border },
+    chipActive: { backgroundColor: c.primary, borderColor: c.primary },
+    chipText: { color: c.muted, fontWeight: '600' },
+    chipTextActive: { color: '#fff' },
+    lista: { flexDirection: 'row', flexWrap: 'wrap', justifyContent: 'space-between' },
+    card: { backgroundColor: c.card, borderRadius: radius, borderLeftWidth: 6, padding: 16, marginBottom: 14, ...shadow },
+    topRow: { flexDirection: 'row', justifyContent: 'space-between' },
+    sev: { fontWeight: '800', fontSize: 12 },
+    origem: { color: c.muted, fontSize: 12 },
+    descricao: { fontSize: 15, color: c.text, marginVertical: 8 },
+    bottomRow: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center' },
+    data: { color: c.muted, fontSize: 12 },
+    resolver: { color: c.primary, fontWeight: '700', fontSize: 13 },
+    resolvida: { color: c.ok, fontWeight: '700', fontSize: 13 },
+    error: { color: c.danger, textAlign: 'center', marginVertical: 12 },
+    empty: { textAlign: 'center', color: c.muted, marginTop: 40, fontSize: 15 },
+  });
