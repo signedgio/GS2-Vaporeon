@@ -2,15 +2,6 @@
 
 API REST da Smart Water & Energy Station. Java 17 + Spring Boot 4 + Spring Data JPA + H2 em **modo arquivo**.
 
-**Integrantes:**
-
-| Nome completo | RM |
-|---------------|----|
-| Giovanna Carmona Roman Lopes | RM563469 |
-| Ian Batinga Barbosa | RM561435 |
-| Pedro Araújo dos Santos | RM563583 |
-
-
 ## Como executar
 
 Pré-requisito: **JDK 17 ou superior** (não precisa instalar o Maven, o projeto usa o Maven Wrapper).
