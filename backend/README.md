@@ -10,11 +10,6 @@ API REST da Smart Water & Energy Station. Java 17 + Spring Boot 4 + Spring Data 
 | Ian Batinga Barbosa | RM561435 |
 | Pedro Araújo dos Santos | RM563583 |
 
-## Integrantes:
-* Giovanna Carmona Roman Lopes – RM: 563469;
-* Ian Batinga Barbosa – RM: 561435;
-* Pedro Araújo dos Santos – RM: 563583
-
 
 ## Como executar
 
