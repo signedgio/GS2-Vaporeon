@@ -88,20 +88,24 @@ public class LeituraService {
 
     private void verificarLimites(Leitura l) {
         if (l.getNivelReservatorio() < nivelMinimo) {
-            falhaService.registrarAutomatica("Reservatorio",
-                    "Nivel do reservatorio abaixo do minimo (" + (int) nivelMinimo + "%)", Severidade.ALTA);
+            falhaService.registrarAutomatica("Reservatório",
+                    "Nível do reservatório abaixo do limite mínimo (" + (int) nivelMinimo + "%)",
+                    Severidade.ALTA, l.getNivelReservatorio(), nivelMinimo, "%");
         }
         if (l.getNivelReservatorio() > nivelMaximo) {
-            falhaService.registrarAutomatica("Reservatorio",
-                    "Nivel do reservatorio acima do maximo (" + (int) nivelMaximo + "%) - risco de transbordo", Severidade.MEDIA);
+            falhaService.registrarAutomatica("Reservatório",
+                    "Nível do reservatório acima do limite máximo (" + (int) nivelMaximo + "%)",
+                    Severidade.MEDIA, l.getNivelReservatorio(), nivelMaximo, "%");
         }
         if (l.getVazao() > vazaoMaxima) {
-            falhaService.registrarAutomatica("Vazao",
-                    "Vazao acima do limite (" + (int) vazaoMaxima + " L/min) - possivel vazamento", Severidade.CRITICA);
+            falhaService.registrarAutomatica("Vazão",
+                    "Vazão acima do limite (" + (int) vazaoMaxima + " L/min), possível vazamento",
+                    Severidade.CRITICA, l.getVazao(), vazaoMaxima, "L/min");
         }
         if (l.getConsumoEletrico() > consumoMaximo) {
             falhaService.registrarAutomatica("Energia",
-                    "Consumo eletrico acima do limite (" + consumoMaximo + " kW)", Severidade.ALTA);
+                    "Potência elétrica acima do limite (" + consumoMaximo + " kW)",
+                    Severidade.ALTA, l.getConsumoEletrico(), consumoMaximo, "kW");
         }
     }
 

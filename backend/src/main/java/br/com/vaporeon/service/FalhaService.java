@@ -32,11 +32,15 @@ public class FalhaService {
         return repository.save(new Falha(request.origem(), request.descricao(), request.severidade()));
     }
 
-    /** Usado internamente quando uma leitura ultrapassa os limites. Ignora duplicadas abertas. */
+    /**
+     * Usado internamente quando uma leitura ultrapassa os limites.
+     * Guarda a leitura e o limite para o app mostrar. Ignora duplicadas abertas.
+     */
     @Transactional
-    public void registrarAutomatica(String origem, String descricao, Severidade severidade) {
+    public void registrarAutomatica(String origem, String descricao, Severidade severidade,
+                                    double valorMedido, double limite, String unidade) {
         if (!repository.existsByOrigemAndDescricaoAndResolvidaFalse(origem, descricao)) {
-            repository.save(new Falha(origem, descricao, severidade));
+            repository.save(new Falha(origem, descricao, severidade, valorMedido, limite, unidade));
         }
     }
 
