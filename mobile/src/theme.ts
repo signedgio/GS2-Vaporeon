@@ -1,7 +1,9 @@
 export interface Palette {
-  background: string;
-  card: string;
-  primary: string;
+  background: string; // fundo da tela
+  card: string; // superficie dos cartoes
+  cardAlt: string; // superficie secundaria (trilhas, campos, botoes)
+  primary: string; // ciano: acoes principais e destaques
+  onPrimary: string; // cor do texto sobre o primary
   primaryDark: string;
   header: string;
   text: string;
@@ -16,45 +18,67 @@ export interface Palette {
   tankBorder: string;
 }
 
-export const lightColors: Palette = {
-  background: '#eaf6fb',
-  card: '#ffffff',
-  primary: '#1b8fc4',
-  primaryDark: '#0d5c82',
-  header: '#0d5c82',
-  text: '#12303f',
-  muted: '#6a8795',
-  border: '#d4e6ee',
-  ok: '#2e9e6b',
-  warn: '#e8a317',
-  danger: '#d64545',
-  critical: '#8e1b3a',
-  water: '#1e9be0',
-  waterSurface: '#7cc9f2',
-  tankBorder: '#0d5c82',
-};
+/** Tom semantico de um estado. Sempre aparece junto de icone e texto, nunca so como cor. */
+export type Tom = 'ok' | 'info' | 'warn' | 'danger' | 'neutro';
 
 export const darkColors: Palette = {
-  background: '#0b1c26',
-  card: '#13303f',
-  primary: '#3fb2e0',
-  primaryDark: '#0a3a52',
-  header: '#0a2f42',
-  text: '#e6f3f9',
-  muted: '#8fb0c0',
-  border: '#24475a',
-  ok: '#3fcf8e',
-  warn: '#f2b84b',
-  danger: '#ff6b6b',
-  critical: '#ff4d79',
-  water: '#2aa8e8',
-  waterSurface: '#8fd6fa',
-  tankBorder: '#5fb8e0',
+  background: '#081b33',
+  card: '#0f2744',
+  cardAlt: '#16355a',
+  primary: '#22d3ee',
+  onPrimary: '#032531',
+  primaryDark: '#0b3b5c',
+  header: '#0a2240',
+  text: '#eaf2fb',
+  muted: '#9fb6cf',
+  border: '#24466f',
+  ok: '#34d399',
+  warn: '#fbbf24',
+  danger: '#f87171',
+  critical: '#fb7185',
+  water: '#38bdf8',
+  waterSurface: '#7dd3fc',
+  tankBorder: '#5b86b3',
 };
 
-export const radius = 18;
+export const lightColors: Palette = {
+  background: '#eef4fa',
+  card: '#ffffff',
+  cardAlt: '#e8f0f8',
+  primary: '#0e7490',
+  onPrimary: '#ffffff',
+  primaryDark: '#0b3b5c',
+  header: '#0a2240',
+  text: '#0b2038',
+  muted: '#4a647d',
+  border: '#ccdaea',
+  ok: '#047857',
+  warn: '#b45309',
+  danger: '#b91c1c',
+  critical: '#9f1239',
+  water: '#0ea5e9',
+  waterSurface: '#7dd3fc',
+  tankBorder: '#7a9bbd',
+};
 
-/** Sombra suave dos cartoes (mais forte no modo escuro). */
+export const radius = 14;
+
+export function corDoTom(c: Palette, tom: Tom): string {
+  switch (tom) {
+    case 'ok':
+      return c.ok;
+    case 'info':
+      return c.primary;
+    case 'warn':
+      return c.warn;
+    case 'danger':
+      return c.danger;
+    default:
+      return c.muted;
+  }
+}
+
+/** Sombra suave dos cartoes. */
 export function shadowFor(escuro: boolean): { boxShadow: string } {
-  return { boxShadow: escuro ? '0 3px 12px rgba(0, 0, 0, 0.40)' : '0 3px 10px rgba(13, 92, 130, 0.10)' };
+  return { boxShadow: escuro ? '0 2px 8px rgba(0, 0, 0, 0.35)' : '0 2px 8px rgba(11, 32, 56, 0.08)' };
 }

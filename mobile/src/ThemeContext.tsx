@@ -1,5 +1,4 @@
 import { createContext, ReactNode, useContext, useMemo, useState } from 'react';
-import { useColorScheme } from 'react-native';
 import { darkColors, lightColors, Palette, shadowFor } from './theme';
 
 interface ThemeValue {
@@ -11,18 +10,16 @@ interface ThemeValue {
 
 const ThemeContext = createContext<ThemeValue | null>(null);
 
-/** Guarda o modo claro/escuro. Comeca pelo modo do aparelho e o usuario pode trocar pelo botao. */
+/** Guarda o modo claro/escuro. O padrao e o escuro (azul-marinho) e o usuario pode trocar pelo botao. */
 export function ThemeProvider({ children }: { children: ReactNode }) {
-  const sistema = useColorScheme();
-  const [escolha, setEscolha] = useState<'claro' | 'escuro' | null>(null);
-  const escuro = (escolha ?? (sistema === 'dark' ? 'escuro' : 'claro')) === 'escuro';
+  const [escuro, setEscuro] = useState(true);
 
   const value = useMemo<ThemeValue>(
     () => ({
       colors: escuro ? darkColors : lightColors,
       shadow: shadowFor(escuro),
       escuro,
-      alternar: () => setEscolha(escuro ? 'claro' : 'escuro'),
+      alternar: () => setEscuro((e) => !e),
     }),
     [escuro],
   );
