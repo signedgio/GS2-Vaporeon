@@ -1,30 +1,34 @@
-import { StyleSheet, TouchableOpacity } from 'react-native';
+import { Pressable } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
+import { useState } from 'react';
 import { useTheme } from '../ThemeContext';
 
-/** Botao do cabecalho que alterna entre modo claro e escuro. */
+/** Botao do cabecalho que alterna entre modo escuro e claro. */
 export function ThemeToggle() {
-  const { escuro, alternar } = useTheme();
+  const { colors, escuro, alternar } = useTheme();
+  const [foco, setFoco] = useState(false);
   return (
-    <TouchableOpacity
+    <Pressable
       onPress={alternar}
-      style={styles.button}
+      onFocus={() => setFoco(true)}
+      onBlur={() => setFoco(false)}
       accessibilityRole="button"
       accessibilityLabel={escuro ? 'Mudar para modo claro' : 'Mudar para modo escuro'}
+      style={[
+        {
+          width: 44,
+          height: 44,
+          borderRadius: 22,
+          borderWidth: 1,
+          borderColor: colors.border,
+          backgroundColor: colors.cardAlt,
+          alignItems: 'center',
+          justifyContent: 'center',
+        },
+        foco && { outlineWidth: 2, outlineColor: colors.primary, outlineStyle: 'solid', outlineOffset: 2 },
+      ]}
     >
-      <Ionicons name={escuro ? 'sunny' : 'moon'} size={22} color="#fff" />
-    </TouchableOpacity>
+      <Ionicons name={escuro ? 'sunny' : 'moon'} size={20} color={colors.text} />
+    </Pressable>
   );
 }
-
-const styles = StyleSheet.create({
-  button: {
-    width: 40,
-    height: 40,
-    borderRadius: 20,
-    marginRight: 16,
-    backgroundColor: 'rgba(255,255,255,0.18)',
-    alignItems: 'center',
-    justifyContent: 'center',
-  },
-});

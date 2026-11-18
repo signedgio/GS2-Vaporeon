@@ -1,93 +1,65 @@
-import { useMemo, useState } from 'react';
-import { ActivityIndicator, RefreshControl, ScrollView, StyleSheet, Switch, View } from 'react-native';
-import { Ionicons } from '@expo/vector-icons';
-import { api, ApiOfflineError } from '../api';
+import { useMemo } from 'react';
+import { RefreshControl, ScrollView, StyleSheet, View } from 'react-native';
 import { Text } from '../components/AppText';
-import { OfflineBanner } from '../components/OfflineBanner';
-import { useApiData } from '../hooks/useApiData';
+import { AtuadorCard } from '../components/AtuadorCard';
+import { Aviso } from '../components/Aviso';
+import { Cartao } from '../components/Cartao';
+import { useEstacao } from '../EstacaoContext';
 import { useLayout } from '../hooks/useLayout';
 import { useTheme } from '../ThemeContext';
-import { Palette, radius } from '../theme';
-import { avisar } from '../utils/avisar';
-
-const ICONES: Record<string, keyof typeof Ionicons.glyphMap> = {
-  BOMBA: 'sync-circle',
-  VALVULA: 'funnel',
-  ENERGIA: 'sunny',
-};
+import { Palette } from '../theme';
 
 export function AtuadoresScreen() {
-  const { colors, shadow } = useTheme();
+  const { colors } = useTheme();
   const { largo } = useLayout();
-  const styles = useMemo(() => makeStyles(colors, shadow), [colors, shadow]);
-  const { data: atuadores, loading, offline, error, refresh } = useApiData(api.atuadores);
-  const [pendente, setPendente] = useState<number | null>(null);
-
-  async function alternar(id: number, ligar: boolean) {
-    setPendente(id);
-    try {
-      await api.acionarAtuador(id, ligar);
-      await refresh();
-    } catch (e) {
-      avisar(
-        e instanceof ApiOfflineError ? 'API fora do ar' : 'Erro',
-        e instanceof ApiOfflineError ? 'Não foi possível acionar o atuador agora.' : (e as Error).message,
-      );
-    } finally {
-      setPendente(null);
-    }
-  }
+  const styles = useMemo(() => makeStyles(colors), [colors]);
+  const { atuadores, conexao, carregando, atualizar } = useEstacao();
+  const offline = conexao === 'offline';
 
   return (
     <ScrollView
-      style={styles.screen}
-      contentContainerStyle={[styles.content, largo && styles.contentLargo]}
-      refreshControl={<RefreshControl refreshing={false} onRefresh={refresh} />}
+      style={styles.tela}
+      contentContainerStyle={[styles.conteudo, largo && styles.conteudoLargo]}
+      refreshControl={<RefreshControl refreshing={false} onRefresh={atualizar} />}
     >
-      <OfflineBanner visible={offline} />
-      {loading && !atuadores ? <ActivityIndicator size="large" color={colors.primary} style={{ marginTop: 40 }} /> : null}
-      {error ? <Text style={styles.error}>{error}</Text> : null}
-
-      <View style={styles.lista}>
-        {(atuadores ?? []).map((item) => (
-          <View key={item.id} style={[styles.card, { width: largo ? '49%' : '100%' }]}>
-            <Ionicons name={ICONES[item.tipo] ?? 'construct'} size={30} color={item.ligado ? colors.ok : colors.muted} />
-            <View style={{ flex: 1 }}>
-              <Text style={styles.nome}>{item.nome}</Text>
-              <Text style={[styles.estado, { color: item.ligado ? colors.ok : colors.muted }]}>
-                {item.ligado ? 'LIGADO' : 'DESLIGADO'}
-              </Text>
-            </View>
-            <Switch
-              value={item.ligado}
-              disabled={pendente === item.id || offline}
-              onValueChange={(v) => alternar(item.id, v)}
-              trackColor={{ true: colors.primary, false: colors.border }}
-            />
-          </View>
-        ))}
+      <View style={{ gap: 4 }}>
+        <Text accessibilityRole="header" style={styles.titulo}>
+          Atuadores
+        </Text>
+        <Text style={styles.sub}>
+          O estado confirmado é o que a API registrou. O comando solicitado fica em andamento até a API confirmar.
+        </Text>
       </View>
+
+      {!atuadores ? (
+        <Cartao>
+          {carregando ? (
+            <Aviso carregando titulo="Carregando atuadores..." />
+          ) : (
+            <Aviso
+              icone={offline ? 'cloud-offline' : 'construct'}
+              titulo={offline ? 'API fora do ar' : 'Nenhum atuador cadastrado'}
+              texto={offline ? 'Os atuadores aparecem quando a API voltar.' : undefined}
+            />
+          )}
+        </Cartao>
+      ) : (
+        <View style={styles.grade}>
+          {atuadores.map((a) => (
+            <AtuadorCard key={a.id} atuador={a} style={{ flexGrow: 1, flexBasis: 340, flexShrink: 1, maxWidth: '100%' }} />
+          ))}
+        </View>
+      )}
     </ScrollView>
   );
 }
 
-const makeStyles = (c: Palette, shadow: { boxShadow: string }) =>
+const makeStyles = (c: Palette) =>
   StyleSheet.create({
-    screen: { flex: 1, backgroundColor: c.background },
-    content: { padding: 16, paddingBottom: 32 },
-    contentLargo: { padding: 28, width: '100%', maxWidth: 1400, alignSelf: 'center' },
-    lista: { flexDirection: 'row', flexWrap: 'wrap', justifyContent: 'space-between' },
-    card: {
-      flexDirection: 'row',
-      alignItems: 'center',
-      gap: 14,
-      backgroundColor: c.card,
-      borderRadius: radius,
-      padding: 18,
-      marginBottom: 14,
-      ...shadow,
-    },
-    nome: { fontSize: 16, fontWeight: '700', color: c.text },
-    estado: { fontSize: 12, fontWeight: '700', marginTop: 2 },
-    error: { color: c.danger, textAlign: 'center', marginVertical: 12 },
+    tela: { flex: 1, backgroundColor: c.background },
+    conteudo: { padding: 16, paddingBottom: 40, gap: 16, width: '100%' },
+    conteudoLargo: { padding: 24, maxWidth: 1400, alignSelf: 'center' },
+    titulo: { fontSize: 20, fontWeight: '700', color: c.text },
+    sub: { fontSize: 13, color: c.muted },
+    grade: { flexDirection: 'row', flexWrap: 'wrap', gap: 16, alignItems: 'stretch' },
   });
